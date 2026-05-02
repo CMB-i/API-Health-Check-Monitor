@@ -1,0 +1,20 @@
+settings:
+  interval_seconds: 30
+  timeout_seconds: 5
+  latency_threshold_ms: 500
+
+endpoints:
+  - name: JSONPlaceholder
+    url: https://jsonplaceholder.typicode.com/posts/1
+
+  - name: GitHub API
+    url: https://api.github.com
+
+  - name: HTTPBin
+    url: https://httpbin.org/get
+
+  - name: Open-Meteo Weather
+    url: https://api.open-meteo.com/v1/forecast?latitude=52.52&longitude=13.41&current_weather=true
+
+  - name: CoinGecko Ping
+    url: https://api.coingecko.com/api/v3/ping
