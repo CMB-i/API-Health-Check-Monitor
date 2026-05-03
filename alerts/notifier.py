@@ -1,16 +1,20 @@
 import os
 import platform
 import logging
+import shlex
 
-# Configure logging to write to alerts/failures.log
-log_file_path = os.path.join(os.path.dirname(__file__), 'failures.log')
+# Configure logging to write to alerts/failures.log without hijacking the root logger
+log_file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'failures.log')
 
-logging.basicConfig(
-    filename=log_file_path,
-    level=logging.WARNING,
-    format='%(asctime)s - %(levelname)s - %(message)s'
-)
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.WARNING)
+
+if not logger.handlers:
+    file_handler = logging.FileHandler(log_file_path)
+    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+    file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)
+    logger.propagate = False
 
 def send_desktop_notification(title, message):
     """
@@ -20,14 +24,14 @@ def send_desktop_notification(title, message):
     system = platform.system()
     if system == "Darwin":
         # macOS
+        # Safely escape double quotes for AppleScript, then use shlex.quote for Bash
+        safe_msg = message.replace('"', '\\"')
         safe_title = title.replace('"', '\\"')
-        safe_message = message.replace('"', '\\"')
-        os.system(f'osascript -e \'display notification "{safe_message}" with title "{safe_title}"\'')
+        applescript = f'display notification "{safe_msg}" with title "{safe_title}"'
+        os.system(f"osascript -e {shlex.quote(applescript)}")
     elif system == "Linux":
         # Linux
-        safe_title = title.replace('"', '\\"')
-        safe_message = message.replace('"', '\\"')
-        os.system(f'notify-send "{safe_title}" "{safe_message}"')
+        os.system(f"notify-send {shlex.quote(title)} {shlex.quote(message)}")
     else:
         # Windows or other systems
         logger.info(f"Desktop notifications not implemented for OS: {system}")
@@ -43,8 +47,9 @@ def process_alerts(results, latency_threshold_ms=500):
 
     for result in results:
         name = result.get('name', 'Unknown API')
-        status = result.get('status')
-        latency = result.get('latency')
+        # Support both 'status' and 'status_code' to prevent mismatch with engine.py
+        status = result.get('status', result.get('status_code'))
+        latency = result.get('latency', result.get('latency_ms'))
 
         is_failure = False
         incident_reasons = []
