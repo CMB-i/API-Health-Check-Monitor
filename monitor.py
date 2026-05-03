@@ -32,11 +32,16 @@ async def run_cycle(endpoints, timeout, latency_threshold_ms):
     return results
 
 
-def print_results(results):
+def print_results(results, latency_threshold_ms=500):
     # Inline display used until ui/dashboard.py (Member 4) is integrated
     console.print()
     for r in results:
-        health = "[bold green]UP[/bold green]" if r["is_up"] else "[bold red]DOWN[/bold red]"
+        if not r["is_up"]:
+            health = "[bold red]DOWN[/bold red]"
+        elif r["latency_ms"] > latency_threshold_ms:
+            health = "[bold yellow]SLOW[/bold yellow]"
+        else:
+            health = "[bold green]UP[/bold green]"
         status = str(r["status_code"]) if r["status_code"] else "ERR"
         error = f"  [dim]{r['error']}[/dim]" if r["error"] else ""
         console.print(f"  {r['name']:<28} {health}  HTTP {status:<5}  {r['latency_ms']:.0f}ms{error}")
@@ -60,7 +65,7 @@ def print_report():
 async def run_loop(config):
     settings = config.get("settings", {})
     endpoints = config["endpoints"]
-    interval = settings.get("interval_seconds", 30)
+    interval = max(10, settings.get("interval_seconds", 30))
     timeout = settings.get("timeout_seconds", 5)
     latency_threshold = settings.get("latency_threshold_ms", 500)
 
@@ -68,7 +73,7 @@ async def run_loop(config):
 
     while True:
         results = await run_cycle(endpoints, timeout, latency_threshold)
-        print_results(results)
+        print_results(results, latency_threshold_ms=latency_threshold)
         console.print(f"[dim]Next check in {interval}s...[/dim]")
         await asyncio.sleep(interval)
 
