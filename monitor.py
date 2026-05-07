@@ -5,8 +5,9 @@ from pathlib import Path
 from rich.console import Console
 
 from core.engine import check_all_endpoints
-from data.logger import init_db, safe_log_results, get_recent_logs, get_avg_latency
+from data.logger import init_db, safe_log_results, get_recent_logs, get_avg_latency, get_uptime_stats
 from alerts.notifier import process_alerts
+from ui.dashboard import dashboard_loop
 
 console = Console()
 CONFIG_PATH = Path(__file__).parent / "config.yaml"
@@ -32,22 +33,6 @@ async def run_cycle(endpoints, timeout, latency_threshold_ms):
     return results
 
 
-def print_results(results, latency_threshold_ms=500):
-    # Inline display used until ui/dashboard.py (Member 4) is integrated
-    console.print()
-    for r in results:
-        if not r["is_up"]:
-            health = "[bold red]DOWN[/bold red]"
-        elif r["latency_ms"] > latency_threshold_ms:
-            health = "[bold yellow]SLOW[/bold yellow]"
-        else:
-            health = "[bold green]UP[/bold green]"
-        status = str(r["status_code"]) if r["status_code"] else "ERR"
-        error = f"  [dim]{r['error']}[/dim]" if r["error"] else ""
-        console.print(f"  {r['name']:<28} {health}  HTTP {status:<5}  {r['latency_ms']:.0f}ms{error}")
-    console.print()
-
-
 def print_report():
     logs = get_recent_logs(limit=20)
     avg = get_avg_latency()
@@ -69,13 +54,10 @@ async def run_loop(config):
     timeout = settings.get("timeout_seconds", 5)
     latency_threshold = settings.get("latency_threshold_ms", 500)
 
-    console.print("[bold cyan]API Health Monitor started.[/bold cyan] Press Ctrl+C to stop.")
+    async def results_provider():
+        return await run_cycle(endpoints, timeout, latency_threshold)
 
-    while True:
-        results = await run_cycle(endpoints, timeout, latency_threshold)
-        print_results(results, latency_threshold_ms=latency_threshold)
-        console.print(f"[dim]Next check in {interval}s...[/dim]")
-        await asyncio.sleep(interval)
+    await dashboard_loop(results_provider, interval=interval)
 
 
 def main():
