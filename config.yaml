@@ -18,3 +18,9 @@ endpoints:
 
   - name: CoinGecko Ping
     url: https://api.coingecko.com/api/v3/ping
+
+  - name: Broken API
+    url: https://httpstat.us/503
+
+  - name: Slow API
+    url: https://httpstat.us/200?sleep=800
