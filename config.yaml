@@ -1,6 +1,6 @@
 settings:
   interval_seconds: 30
-  timeout_seconds: 5
+  timeout_seconds: 12
   latency_threshold_ms: 500
 
 endpoints:
@@ -20,7 +20,7 @@ endpoints:
     url: https://api.coingecko.com/api/v3/ping
 
   - name: Broken API
-    url: https://httpstat.us/503
+    url: https://httpbin.org/status/503
 
   - name: Slow API
-    url: https://httpstat.us/200?sleep=800
+    url: https://httpbin.org/delay/10

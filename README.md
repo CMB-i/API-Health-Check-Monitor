@@ -54,7 +54,8 @@ API-Health-Check-Monitor/
 | 3 | HTTPBin | `https://httpbin.org/get` |
 | 4 | Open-Meteo Weather | `https://api.open-meteo.com/v1/forecast?...` |
 | 5 | CoinGecko Ping | `https://api.coingecko.com/api/v3/ping` |
-
+| 6 | Broken API (demo) | `https://httpbin.org/status/503` |
+| 7 | Slow API (demo timeout) | `https://httpbin.org/delay/10` |
 ---
 
 ## Tech Stack
@@ -99,6 +100,8 @@ API Health Monitor started. Press Ctrl+C to stop.
   HTTPBin                      UP    HTTP 200   176ms
   Open-Meteo Weather           UP    HTTP 200   415ms
   CoinGecko Ping               UP    HTTP 200    91ms
+  Broken API                   FAIL  HTTP 503    120ms
+  Slow API                     TIMEOUT           5000ms
 
 Next check in 30s...
 ```
@@ -111,9 +114,28 @@ settings:
   latency_threshold_ms: 500  # Alert if response exceeds this
 
 endpoints:
+
+   - name: JSONPlaceholder
+    url: https://jsonplaceholder.typicode.com/posts/1
+
   - name: GitHub API
     url: https://api.github.com
-  # Add more endpoints here...
+
+  - name: HTTPBin
+    url: https://httpbin.org/get
+
+  - name: Open-Meteo Weather
+    url: https://api.open-meteo.com/v1/forecast?latitude=52.52&longitude=13.41&current_weather=true
+
+  - name: CoinGecko Ping
+    url: https://api.coingecko.com/api/v3/ping
+
+  - name: Broken API
+    url: https://httpbin.org/status/503
+
+  - name: Slow API
+    url: https://httpbin.org/delay/10
+  
 ```
 To add a new endpoint, append a name + url entry under endpoints and restart the monitor.
 
