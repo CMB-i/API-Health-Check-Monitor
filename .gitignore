@@ -6,3 +6,4 @@ __pycache__/
 # Logs and Databases
 alerts/failures.log
 data/health.db
+*.pdf
