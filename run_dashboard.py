@@ -20,5 +20,9 @@ async def main():
     await dashboard_loop(get_results, interval=interval)
 
 
+
 if __name__ == "__main__":
-    asyncio.run(main())
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        print("\nMonitor stopped.")

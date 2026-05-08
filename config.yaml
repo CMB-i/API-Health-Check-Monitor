@@ -3,24 +3,66 @@ settings:
   timeout_seconds: 12
   latency_threshold_ms: 500
 
+alerts:
+  email:
+    enabled: false
+    smtp_host: "smtp.gmail.com"
+    smtp_port: 587
+    username: "your_email@gmail.com"
+    password: "your_app_password"
+    from_email: "your_email@gmail.com"
+    to_emails:
+      - "receiver1@example.com"
+      - "receiver2@example.com"
+
 endpoints:
   - name: JSONPlaceholder
     url: https://jsonplaceholder.typicode.com/posts/1
+    validation:
+      json_path_equals:
+        id: 1
+      json_path_exists:
+        - userId
+        - title
+        - body
 
   - name: GitHub API
     url: https://api.github.com
+    validation:
+      json_path_exists:
+        - current_user_url
+        - rate_limit_url
+      json_path_equals:
+        current_user_url: "https://api.github.com/user"
 
   - name: HTTPBin
     url: https://httpbin.org/get
+    validation:
+      json_path_exists:
+        - url
+        - headers
+      json_path_equals:
+        url: "https://httpbin.org/get"
 
   - name: Open-Meteo Weather
     url: https://api.open-meteo.com/v1/forecast?latitude=52.52&longitude=13.41&current_weather=true
+    validation:
+      json_path_exists:
+        - latitude
+        - longitude
+        - current_weather
 
   - name: CoinGecko Ping
     url: https://api.coingecko.com/api/v3/ping
+    validation:
+      json_path_exists:
+        - gecko_says
 
   - name: Broken API
     url: https://httpbin.org/status/503
 
   - name: Slow API
     url: https://httpbin.org/delay/10
+    validation:
+      json_path_exists:
+        - url
